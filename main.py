@@ -9,13 +9,22 @@ import user_management as dbHandler
 
 app = Flask(__name__)
 
+# Initialises authentication variable
+USER_LOGGED_IN = False
 
 @app.route("/success.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
 def addFeedback():
+    global USER_LOGGED_IN
+    # Authenticates User
+    app.logger.critical(("Accessing /success.html, %s", USER_LOGGED_IN ))
+    if USER_LOGGED_IN is False:
+        app.logger.critical(("Invalid User Auth ? %s", USER_LOGGED_IN ))
+        return redirect("/")
+
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
         return redirect(url, code=302)
-    if request.method == "POST":
+    elif request.method == "POST":
         feedback = request.form["feedback"]
         dbHandler.insertFeedback(feedback)
         dbHandler.listFeedback()
@@ -43,6 +52,7 @@ def signup():
 @app.route("/index.html", methods=["POST", "GET", "PUT", "PATCH", "DELETE"])
 @app.route("/", methods=["POST", "GET"])
 def home():
+    global USER_LOGGED_IN
     if request.method == "GET" and request.args.get("url"):
         url = request.args.get("url", "")
         return redirect(url, code=302)
@@ -51,8 +61,10 @@ def home():
         password = request.form["password"]
         isLoggedIn = dbHandler.retrieveUsers(username, password)
         if isLoggedIn:
+            app.logger.critical("Login Successful!")
+            USER_LOGGED_IN = True #Updates Variable upon login
             dbHandler.listFeedback()
-            return render_template("/success.html", value=username, state=isLoggedIn)
+            return render_template("/success.html", value=username, state=USER_LOGGED_IN)
         else:
             return render_template("/index.html")
     else:
