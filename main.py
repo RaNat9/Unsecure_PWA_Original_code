@@ -17,7 +17,7 @@ import user_management as dbHandler
 app = Flask(__name__)
 
 ##
-app.secret_key = 'your_secret_key'
+app.secret_key = uuid.uuid4()
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
